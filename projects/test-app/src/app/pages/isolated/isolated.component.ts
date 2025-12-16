@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
-import { PageContentComponent } from "../../components/page-content/page-content.component";
 import { TranslateService, provideTranslateService } from "@ngx-translate/core";
 import { provideTranslateHttpLoader } from "@ngx-translate/http-loader";
 import { LanguageSwitchComponent } from "../../components/language-switch/language-switch.component";
+import { PageContentComponent } from "../../components/page-content/page-content.component";
 
 @Component({
     selector: "app-first",
@@ -20,7 +20,7 @@ import { LanguageSwitchComponent } from "../../components/language-switch/langua
             }),
         }),
     ],
-    template: ` <h2>Component uses isolated TranslateService</h2>
+    template: `<h2>Component uses isolated TranslateService</h2>
         <app-language-switch />
         <app-page-content />`,
     changeDetection: ChangeDetectionStrategy.OnPush,

@@ -8,5 +8,5 @@ import { TranslateService } from "@ngx-translate/core";
     templateUrl: "./language-switch.component.html",
 })
 export class LanguageSwitchComponent {
-    translate = inject(TranslateService);
+    translateService = inject(TranslateService);
 }

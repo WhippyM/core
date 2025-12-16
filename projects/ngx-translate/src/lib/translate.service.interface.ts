@@ -1,5 +1,5 @@
-import { InterpolateFunction } from "./translate.parser";
 import { Observable } from "rxjs";
+import { InterpolateFunction } from "./translate.parser";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type InterpolationParameters = Record<string, any>;

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from "@angular/core";
+import { Component, effect, inject, OnInit } from "@angular/core";
 import { RouterModule } from "@angular/router";
 import { _, TranslateService, TranslationObject } from "@ngx-translate/core";
 import { map } from "rxjs";
@@ -20,6 +20,11 @@ export class AppComponent implements OnInit {
 
     title = _("test-app");
 
+    onTranslationChange = effect(() => {
+        const event = this.translate.$onTranslationChange();
+        console.log("AppComponent - onTranslationChange", event);
+    });
+
     ngOnInit() {
         // Service Get method with a set of string[]
         this.translate
@@ -35,14 +40,10 @@ export class AppComponent implements OnInit {
                 const instantTranslation = this.translate.instant("demo.simple.text-as-attribute");
                 console.info("instant", instantTranslation);
             });
-
-        this.translate.onTranslationChange.subscribe((event) => {
-            console.info("onTranslationChange", event);
-        });
     }
 
     reloadLang() {
-        this.translate.reloadLang(this.translate.getCurrentLang()).subscribe((translations) => {
+        this.translate.reloadLang(this.translate.$currentLang()).subscribe((translations) => {
             console.info("reloadLang", translations);
         });
     }

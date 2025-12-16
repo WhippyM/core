@@ -5,8 +5,6 @@ import { MissingTranslationHandler } from "./missing-translation-handler";
 import { TranslateCompiler } from "./translate.compiler";
 import { TranslateLoader } from "./translate.loader";
 import { TranslateParser } from "./translate.parser";
-import { DeepReadonly, TranslateStore } from "./translate.store";
-import { insertValue, isArray, isDefinedAndNotNull, isDict, isString } from "./util";
 import {
     DefaultLangChangeEvent,
     FallbackLangChangeEvent,
@@ -21,6 +19,8 @@ import {
     TranslationChangeEvent,
     TranslationObject,
 } from "./translate.service.interface";
+import { DeepReadonly, TranslateStore } from "./translate.store";
+import { insertValue, isArray, isDefinedAndNotNull, isDict, isString } from "./util";
 
 /**
  * Configuration object for the translation service.
@@ -72,30 +72,23 @@ export class TranslateService implements ITranslateService {
      * onTranslationChange.subscribe((params: TranslationChangeEvent) => {
      *     // do something
      * });
+     * @deprecated use compute `$onTranslationChange` instead
      */
     public get onTranslationChange(): Observable<TranslationChangeEvent> {
         return this.store.onTranslationChange;
     }
 
     /**
-     * An Observable to listen to lang change events
-     * onLangChange.subscribe((params: LangChangeEvent) => {
-     *     // do something
-     * });
+     * Signals
      */
-    get onLangChange(): Observable<LangChangeEvent> {
-        return this.store.onLangChange;
-    }
+    $onTranslationChange = this.store.$onTranslationChange.asReadonly();
+    $onLangChange = this.store.$onLangChange.asReadonly();
+    $onFallbackLangChange = this.store.$onFallbackLangChange.asReadonly();
 
-    /**
-     * An Observable to listen to fallback lang change events
-     * onFallbackLangChange.subscribe((params: FallbackLangChangeEvent) => {
-     *     // do something
-     * });
-     */
-    get onFallbackLangChange(): Observable<FallbackLangChangeEvent> {
-        return this.store.onFallbackLangChange;
-    }
+    $translations = this.store.$translations.asReadonly();
+    $fallbackLang = this.store.$fallbackLang.asReadonly();
+    $currentLang = this.store.$currentLang.asReadonly();
+    $languages = this.store.$languages.asReadonly();
 
     constructor() {
         const config: TranslateServiceConfig = {
@@ -125,7 +118,7 @@ export class TranslateService implements ITranslateService {
      * current language
      */
     public setFallbackLang(lang: Language): Observable<InterpolatableTranslationObject> {
-        if (!this.getFallbackLang()) {
+        if (!this.$fallbackLang()) {
             // on init set the fallbackLang immediately, but do not emit a change yet
             this.store.setFallbackLang(lang, false);
         }
@@ -160,7 +153,7 @@ export class TranslateService implements ITranslateService {
         // where translation loads might complete in random order
         this.lastUseLanguage = lang;
 
-        if (!this.getCurrentLang()) {
+        if (!this.$currentLang()) {
             // on init set the currentLang immediately, but do not emit a change yet
             this.store.setCurrentLang(lang, false);
         }
@@ -216,8 +209,11 @@ export class TranslateService implements ITranslateService {
         this.store.setCurrentLang(lang);
     }
 
+    /**
+     * @deprecated access `$currentLang()` directly
+     */
     public getCurrentLang(): Language {
-        return this.store.getCurrentLang();
+        return this.$currentLang();
     }
 
     protected loadAndCompileTranslations(
@@ -266,8 +262,9 @@ export class TranslateService implements ITranslateService {
         this.store.setTranslations(lang, interpolatableTranslations, shouldMerge || this.extend);
     }
 
+    /** @deprecated use `access $languages directly` */
     public getLangs(): readonly Language[] {
-        return this.store.getLanguages();
+        return this.$languages();
     }
 
     /**
@@ -294,13 +291,6 @@ export class TranslateService implements ITranslateService {
         });
 
         return res !== undefined ? res : key;
-    }
-
-    /**
-     * Gets the fallback language. null if none is defined
-     */
-    public getFallbackLang(): Language | null {
-        return this.store.getFallbackLang();
     }
 
     protected getTextToInterpolate(key: string): InterpolatableTranslation | undefined {
@@ -403,7 +393,7 @@ export class TranslateService implements ITranslateService {
 
         // check if we are loading a new translation to use
         if (this.lastUseLanguage && this.loadingTranslations[this.lastUseLanguage]) {
-            return this.loadingTranslations[this.store.getCurrentLang()].pipe(
+            return this.loadingTranslations[this.$currentLang()].pipe(
                 concatMap(() => {
                     return makeObservable(this.getParsedResult(key, interpolateParams));
                 }),
@@ -495,7 +485,7 @@ export class TranslateService implements ITranslateService {
     public set(
         key: string,
         translation: string | TranslationObject,
-        lang: Language = this.getCurrentLang(),
+        lang: Language = this.$currentLang(),
     ): void {
         this.store.setTranslations(
             lang,
@@ -565,30 +555,52 @@ export class TranslateService implements ITranslateService {
     /** Deprecations **/
 
     /**
-     * @deprecated use `getFallbackLang()`
+     * An Observable to listen to lang change events
+     * onLangChange.subscribe((params: LangChangeEvent) => {
+     *     // do something
+     * });
+     * @deprecated use compute `$onLangChange` or preferably `$currentLang` instead
+     */
+    get onLangChange(): Observable<LangChangeEvent> {
+        return this.store.onLangChange;
+    }
+
+    /**
+     * An Observable to listen to fallback lang change events
+     * onFallbackLangChange.subscribe((params: FallbackLangChangeEvent) => {
+     *     // do something
+     * });
+     * @deprecated use compute `$onFallbackLangChange` or preferably `$fallbackLang` instead
+     */
+    get onFallbackLangChange(): Observable<FallbackLangChangeEvent> {
+        return this.store.onFallbackLangChange;
+    }
+
+    /**
+     * @deprecated use `$fallbackLang` instead
      */
     get defaultLang(): Language | null {
-        return this.getFallbackLang();
+        return this.$fallbackLang();
     }
 
     /**
      * The lang currently used
-     * @deprecated use `getCurrentLang()`
+     * @deprecated use `$currentLang()` instead
      */
     get currentLang(): Language {
-        return this.store.getCurrentLang();
+        return this.$currentLang();
     }
 
     /**
-     * @deprecated use `getLangs()`
+     * @deprecated use `$languages()` instead
      */
     get langs(): readonly Language[] {
-        return this.store.getLanguages();
+        return this.$languages();
     }
 
     /**
      * Sets the  language to use as a fallback
-     * @deprecated use setFallbackLang()
+     * @deprecated use `setFallbackLang()` instead
      */
     public setDefaultLang(lang: Language): Observable<InterpolatableTranslationObject> {
         return this.setFallbackLang(lang);
@@ -596,16 +608,24 @@ export class TranslateService implements ITranslateService {
 
     /**
      * Gets the fallback language used
-     * @deprecated use getFallbackLang()
+     * @deprecated use `$fallbackLang()` instead
      */
     public getDefaultLang(): Language | null {
-        return this.getFallbackLang();
+        return this.$fallbackLang();
     }
 
     /**
-     * @deprecated Use onFallbackLangChange() instead
+     * @deprecated Use compute `$fallbackLang` instead
      */
     get onDefaultLangChange(): Observable<DefaultLangChangeEvent> {
         return this.store.onFallbackLangChange;
+    }
+
+    /**
+     * Gets the fallback language. null if none is defined
+     * @deprecated access `$fallbackLang()` directly
+     */
+    public getFallbackLang(): Language | null {
+        return this.$fallbackLang();
     }
 }

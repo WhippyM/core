@@ -2,22 +2,19 @@ import {
     AfterViewChecked,
     ChangeDetectorRef,
     Directive,
+    effect,
     ElementRef,
     inject,
     Input,
-    OnDestroy,
 } from "@angular/core";
-import { isObservable, Subscription } from "rxjs";
+import { isObservable } from "rxjs";
 import { TranslateService } from "./translate.service";
-import { equals, isDefinedAndNotNull, isString } from "./util";
 import {
-    FallbackLangChangeEvent,
     InterpolatableTranslation,
     InterpolationParameters,
-    LangChangeEvent,
     StrictTranslation,
-    TranslationChangeEvent,
 } from "./translate.service.interface";
+import { equals, isDefinedAndNotNull, isString } from "./util";
 
 interface ExtendedNode extends Text {
     originalContent: string;
@@ -32,7 +29,7 @@ interface ExtendedNode extends Text {
     selector: "[translate],[ngx-translate]",
     standalone: true,
 })
-export class TranslateDirective implements AfterViewChecked, OnDestroy {
+export class TranslateDirective implements AfterViewChecked {
     protected translateService: TranslateService = inject(TranslateService);
     protected element: ElementRef = inject(ElementRef);
     protected _ref: ChangeDetectorRef = inject(ChangeDetectorRef);
@@ -40,9 +37,6 @@ export class TranslateDirective implements AfterViewChecked, OnDestroy {
     protected key!: string;
     protected lastParams?: InterpolationParameters;
     protected currentParams?: InterpolationParameters;
-    protected readonly onLangChangeSub!: Subscription;
-    protected readonly onFallbackLangChangeSub!: Subscription;
-    protected readonly onTranslationChangeSub!: Subscription;
 
     @Input() set translate(key: string) {
         if (key) {
@@ -58,37 +52,21 @@ export class TranslateDirective implements AfterViewChecked, OnDestroy {
         }
     }
 
-    constructor() {
-        // subscribe to onTranslationChange event, in case the translations of the current lang change
-        if (!this.onTranslationChangeSub) {
-            this.onTranslationChangeSub = this.translateService.onTranslationChange.subscribe(
-                (event: TranslationChangeEvent) => {
-                    if (event.lang === this.translateService.currentLang) {
-                        this.checkNodes(true, event.translations);
-                    }
-                },
-            );
-        }
+    onTranslationChange = effect(() => {
+        const event = this.translateService.$onTranslationChange();
 
-        // subscribe to onLangChange event, in case the language changes
-        if (!this.onLangChangeSub) {
-            this.onLangChangeSub = this.translateService.onLangChange.subscribe(
-                (event: LangChangeEvent) => {
-                    this.checkNodes(true, event.translations);
-                },
-            );
+        if (event.lang === this.translateService.$currentLang()) {
+            this.checkNodes(true, event.translations);
         }
+    });
+    onLangChange = effect(() => {
+        const event = this.translateService.$onLangChange();
 
-        // subscribe to onFallbackLangChange event, in case the fallback language changes
-        if (!this.onFallbackLangChangeSub) {
-            this.onFallbackLangChangeSub = this.translateService.onFallbackLangChange.subscribe(
-                (event: FallbackLangChangeEvent) => {
-                    void event;
-                    this.checkNodes(true);
-                },
-            );
-        }
-    }
+        this.checkNodes(true, event.translations);
+    });
+    onFallbackLangChange = effect(() => {
+        if (this.translateService.$onFallbackLangChange()) this.checkNodes(true);
+    });
 
     ngAfterViewChecked() {
         this.checkNodes();
@@ -193,20 +171,6 @@ export class TranslateDirective implements AfterViewChecked, OnDestroy {
             node.textContent = content;
         } else {
             node.data = content;
-        }
-    }
-
-    ngOnDestroy() {
-        if (this.onLangChangeSub) {
-            this.onLangChangeSub.unsubscribe();
-        }
-
-        if (this.onFallbackLangChangeSub) {
-            this.onFallbackLangChangeSub.unsubscribe();
-        }
-
-        if (this.onTranslationChangeSub) {
-            this.onTranslationChangeSub.unsubscribe();
         }
     }
 }
