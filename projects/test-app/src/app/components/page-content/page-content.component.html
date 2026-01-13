@@ -11,6 +11,8 @@
     <p translate>demo.simple.text-as-content</p>
 
     <p>{{ "demo.simple.text-as-pipe-with-params" | translate: { value: "params" } }}</p>
+
+    <p>{{ $textAsSignal() }}</p>
 </div>
 
 <app-standalone-component />

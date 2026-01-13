@@ -1,4 +1,5 @@
 import { inject, Injectable, InjectionToken } from "@angular/core";
+import { toSignal, ToSignalOptions } from "@angular/core/rxjs-interop";
 import { concat, defer, finalize, forkJoin, isObservable, Observable, of, tap } from "rxjs";
 import { concatMap, map, shareReplay, switchMap, take } from "rxjs/operators";
 import { MissingTranslationHandler } from "./missing-translation-handler";
@@ -401,6 +402,21 @@ export class TranslateService implements ITranslateService {
         }
 
         return makeObservable(this.getParsedResult(key, interpolateParams));
+    }
+
+    /**
+     * Returns a signal of the translated value of a key (or an array of keys)
+     * Works like get(), but returns a signal instead of an Observable.
+     */
+    public $stream(
+        key: string | string[],
+        interpolateParams?: InterpolationParameters,
+        options: NoInfer<ToSignalOptions<Translation>> & {
+            initialValue?: Translation;
+            requireSync?: false;
+        } = {},
+    ) {
+        return toSignal(this.stream(key, interpolateParams), options);
     }
 
     /**

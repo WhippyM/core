@@ -3,7 +3,8 @@
         "simple": {
             "text-as-attribute": "Isolated: Text as attribute",
             "text-as-content": "Isolated: Text as content",
-            "text-as-pipe-with-params": "Isolated: Text as pipe with {{value}}"
+            "text-as-pipe-with-params": "Isolated: Text as pipe with {{value}}",
+            "text-as-signal": "Isolated: Text as signal $stream()"
         },
         "title": "Isolated: Test Application"
     },

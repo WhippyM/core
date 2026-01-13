@@ -271,6 +271,45 @@ describe("TranslateService", () => {
         });
     });
 
+    describe("TranslateService getSignal", () => {
+        let translate: TestableTranslateService;
+
+        beforeEach(() => {
+            TestBed.configureTestingModule({
+                providers: [
+                    provideTestableTranslateService({ loader: provideTranslateLoader(FakeLoader) }),
+                ],
+            });
+            translate = TestBed.inject(TranslateService) as TestableTranslateService;
+        });
+
+        it("should return a signal with the correct translation", () => {
+            translations = { TEST: "Signal test" };
+            translate.use("en");
+            const signal = translate.$stream("TEST");
+            expect(signal()).toEqual("Signal test");
+        });
+
+        it("should update signal value when translation changes", () => {
+            translations = { TEST: "Initial" };
+            translate.use("en");
+            const signal = translate.$stream("TEST");
+            expect(signal()).toEqual("Initial");
+            translate.setTranslation("en", { TEST: "Updated" });
+            expect(signal()).toEqual("Updated");
+        });
+
+        it("should update signal value when language changes", () => {
+            translations = { TEST: "English" };
+            translate.use("en");
+            const signal = translate.$stream("TEST");
+            expect(signal()).toEqual("English");
+            translate.setTranslation("nl", { TEST: "Dutch" });
+            translate.use("nl");
+            expect(signal()).toEqual("Dutch");
+        });
+    });
+
     it("should merge translations if option shouldMerge is true", (done: DoneFn) => {
         translations = {};
         translate.setTranslation("en", { TEST: { sub1: "value1" } }, true);

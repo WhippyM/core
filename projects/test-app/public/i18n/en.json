@@ -3,7 +3,8 @@
         "simple": {
             "text-as-attribute": "Global: Text as attribute",
             "text-as-content": "Global: Text as content",
-            "text-as-pipe-with-params": "Global: Text as pipe with {{value}}"
+            "text-as-pipe-with-params": "Global: Text as pipe with {{value}}",
+            "text-as-signal": "Global: Text as signal $stream $stream()"
         },
         "title": "Global: Test Application"
     },

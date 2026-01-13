@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
-import { PageContentComponent } from "../../components/page-content/page-content.component";
 import { TranslateService } from "@ngx-translate/core";
 import { LanguageSwitchComponent } from "../../components/language-switch/language-switch.component";
+import { PageContentComponent } from "../../components/page-content/page-content.component";
 
 @Component({
     selector: "app-second",

@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
-import { TranslateDirective, TranslatePipe } from "@ngx-translate/core";
+import { TranslateDirective, TranslatePipe, TranslateService } from "@ngx-translate/core";
 import { StandaloneComponent } from "../standalone/standalone.component";
 
 @Component({
@@ -20,4 +20,12 @@ import { StandaloneComponent } from "../standalone/standalone.component";
     templateUrl: "./page-content.component.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PageContentComponent {}
+export class PageContentComponent {
+    private readonly translate = inject(TranslateService);
+
+    $textAsSignal = this.translate.$stream(
+        "demo.simple.text-as-signal",
+        {},
+        { initialValue: "..." },
+    );
+}
