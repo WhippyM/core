@@ -54,7 +54,7 @@ export class TranslateHttpLoader implements TranslateLoader {
      * Gets the translations from the server
      */
     public getTranslation(lang: string): Observable<TranslationObject> {
-        const cacheBuster = this.config.enforceLoading ? `?enforceLoading=${this.config.cacheBusterFnc()}` : "";
+        const cacheBuster = this.config.enforceLoading ? `?enforceLoading=${this.config.cacheBusterFnc?.()}` : "";
 
         const requests = this.config.resources.map((resource) => {
             let path: string;
