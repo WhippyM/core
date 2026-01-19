@@ -9,6 +9,7 @@ export interface TranslateHttpLoaderConfig {
     showLog?: boolean;
     enforceLoading: boolean;
     useHttpBackend: boolean;
+    cacheBusterFnc?: () => string;
 }
 
 export interface TranslateHttpLoaderResource {
@@ -22,6 +23,7 @@ export interface TranslateMultiHttpLoaderConfig {
     resources: (string | TranslateHttpLoaderResource)[];
     enforceLoading: boolean;
     useHttpBackend: boolean;
+    cacheBusterFnc?: () => string;
 }
 
 export const TRANSLATE_HTTP_LOADER_CONFIG = new InjectionToken<
@@ -39,6 +41,7 @@ export class TranslateHttpLoader implements TranslateLoader {
             enforceLoading: false,
             useHttpBackend: false,
             showLog: false,
+            cacheBusterFnc: () => Date.now(),
             ...inject(TRANSLATE_HTTP_LOADER_CONFIG),
         };
 
@@ -51,7 +54,7 @@ export class TranslateHttpLoader implements TranslateLoader {
      * Gets the translations from the server
      */
     public getTranslation(lang: string): Observable<TranslationObject> {
-        const cacheBuster = this.config.enforceLoading ? `?enforceLoading=${Date.now()}` : "";
+        const cacheBuster = this.config.enforceLoading ? `?enforceLoading=${this.config.cacheBusterFnc?.()}` : "";
 
         const requests = this.config.resources.map((resource) => {
             let path: string;
